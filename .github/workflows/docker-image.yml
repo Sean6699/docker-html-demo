@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Deploy Docker Image
 
 on:
   push:
@@ -28,3 +28,14 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/docker-html-demo:latest
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted, vm-local]
+    steps:
+      - name: Pull and Run Docker Container
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/docker-html-demo:latest
+          docker stop docker-html-demo || true
+          docker rm docker-html-demo || true
+          docker run -d --name docker-html-demo -p 80:80 ${{ secrets.DOCKER_USERNAME }}/docker-html-demo:latest
